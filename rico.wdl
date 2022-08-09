@@ -26,17 +26,18 @@ task rsem {
     done
     export UNIQUE_DIRS=`cat all_dirs.txt | sort | uniq | paste -sd ","`
     echo $UNIQUE_DIRS
-    # run singularity
+    # run singularity, allowing time for file cleanup
     singularity --verbose exec \
     --bind $UNIQUE_DIRS \
-    /.mounts/labs/CGI/scratch/ibancarz/singularity/ubuntu_20.04.sif \
-    zcat $FASTQ_1 | head > fastq1_head.txt \
-    && zcat $FASTQ_2 | head > fastq2_head.txt
-  >>>
+    /.mounts/labs/CGI/scratch/ibancarz/singularity/rico_adult.sif \
+    --version > test.out 2> test.err
+>>>
 
   output {
-    File head1 = "fastq1_head.txt"
-    File head2 = "fastq2_head.txt"
+    File test_out = "test.out"
+    File test_err = "test.err"
+    #File head1 = "fastq1_head.txt"
+    #File head2 = "fastq2_head.txt"
     #File genes = "~{library_id}.genes.results"
     #File isoforms = "~{library_id}.isoforms.results"
   }
