@@ -26,20 +26,42 @@ task rsem {
     done
     export UNIQUE_DIRS=`cat all_dirs.txt | sort | uniq | paste -sd ","`
     echo $UNIQUE_DIRS
+    # use a different tempdir
+    #mkdir -p tmp/singularity
+    #touch tmp/temp
+    #export TMPDIR=$PWD/tmp/singularity
     # run singularity, allowing time for file cleanup
     singularity --verbose exec \
     --bind $UNIQUE_DIRS \
+    --containall \
     /.mounts/labs/CGI/scratch/ibancarz/singularity/rico_adult.sif \
-    --version > test.out 2> test.err
->>>
+    /rico/RSEM-1.3.0/rsem-calculate-expression \
+    --no-bam-output \
+    --star \
+    --star-path /rico/STAR-2.5.2b/bin/Linux_x86_64/ \
+    --star-gzipped-read-file \
+    --star-output-genome-bam \
+    --estimate-rspd \
+    --paired-end \
+    --seed \
+    12345 \
+    -p \
+    48 \
+    --forward-prob \
+    0 \
+    $FASTQ_1 \
+    $FASTQ_2 \
+    /rico/ref/hg38_no_alt \
+    ~{library_id}
+  >>>
 
   output {
-    File test_out = "test.out"
-    File test_err = "test.err"
+    #File test_out = "test.out"
+    #File test_err = "test.err"
     #File head1 = "fastq1_head.txt"
     #File head2 = "fastq2_head.txt"
-    #File genes = "~{library_id}.genes.results"
-    #File isoforms = "~{library_id}.isoforms.results"
+    File genes = "~{library_id}.genes.results"
+    File isoforms = "~{library_id}.isoforms.results"
   }
 
 }
