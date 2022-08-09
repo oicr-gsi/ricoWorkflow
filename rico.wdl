@@ -22,40 +22,23 @@ task rsem {
     export FASTQ_2=`readlink ~{fastq_2}`
     for FILE in $FASTQ_1 $FASTQ_2; do
         export DIRNAME=`dirname $FILE`
-        echo ${DIRNAME}:${HOME}/data/${DIRNAME} >> all_dirs.txt
+        echo ${DIRNAME} >> all_dirs.txt
     done
     export UNIQUE_DIRS=`cat all_dirs.txt | sort | uniq | paste -sd ","`
     echo $UNIQUE_DIRS
-    mkdir singularity_work
     # run singularity
     singularity --verbose exec \
-    --bind $PWD/singularity_work:$HOME/singularity_work,$UNIQUE_DIRS \
-    --workdir $PWD/singularity_work \
-    --writable-tmpfs \
-    /.mounts/labs/CGI/scratch/ibancarz/singularity/rico_adult.sif \
-    /rico/RSEM-1.3.0/rsem-calculate-expression \
-    --no-bam-output \
-    --star \
-    --star-path /rico/STAR-2.5.2b/bin/Linux_x86_64/ \
-    --star-gzipped-read-file \
-    --star-output-genome-bam \
-    --estimate-rspd \
-    --paired-end \
-    --seed \
-    12345 \
-    -p \
-    48 \
-    --forward-prob \
-    0 \
-    $FASTQ_1 \
-    $FASTQ_2 \
-    /rico/ref/hg38_no_alt \
-    ~{library_id}
+    --bind $UNIQUE_DIRS \
+    /.mounts/labs/CGI/scratch/ibancarz/singularity/ubuntu_20.04.sif \
+    zcat $FASTQ_1 | head > fastq1_head.txt \
+    && zcat $FASTQ_2 | head > fastq2_head.txt
   >>>
 
   output {
-    File genes = "~{library_id}.genes.results"
-    File isoforms = "~{library_id}.isoforms.results"
+    File head1 = "fastq1_head.txt"
+    File head2 = "fastq2_head.txt"
+    #File genes = "~{library_id}.genes.results"
+    #File isoforms = "~{library_id}.isoforms.results"
   }
-    
+
 }
